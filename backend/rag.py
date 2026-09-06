@@ -11,6 +11,7 @@ from google import genai
 # 1. LOAD GEMINI API KEY
 # ============================================================
 
+# Load .env for local development
 load_dotenv("backend/.env")
 
 api_key = os.getenv("GEMINI_API_KEY")
@@ -21,6 +22,7 @@ if not api_key:
         "Make sure GEMINI_API_KEY is set in Streamlit Secrets."
     )
 
+# Create Gemini client
 client = genai.Client(api_key=api_key)
 
 
@@ -32,20 +34,26 @@ with open("backend/chunks.json", "r", encoding="utf-8") as file:
     chunks = json.load(file)
 
 
-# Embedding model
+# ============================================================
+# 3. LOAD EMBEDDING MODEL
+# ============================================================
+
 embedding_model = SentenceTransformer(
     "all-MiniLM-L6-v2"
 )
 
 
-# FAISS vector database
+# ============================================================
+# 4. LOAD FAISS VECTOR DATABASE
+# ============================================================
+
 index = faiss.read_index(
     "backend/faiss.index"
 )
 
 
 # ============================================================
-# 3. RETRIEVAL
+# 5. RETRIEVAL
 # ============================================================
 
 def retrieve(question, top_k=5):
@@ -82,7 +90,7 @@ def retrieve(question, top_k=5):
 
 
 # ============================================================
-# 4. GENERATION
+# 6. GENERATION
 # ============================================================
 
 def generate_answer(question):
@@ -142,13 +150,13 @@ At the end, mention the relevant page number.
 
 
     # --------------------------------------------------------
-    # GEMINI LLM
+    # Gemini LLM
     # --------------------------------------------------------
 
     try:
 
         response = client.models.generate_content(
-            model="gemini-3.5-flash-lite",
+            model="gemini-2.5-flash-lite",
             contents=prompt
         )
 
@@ -156,7 +164,7 @@ At the end, mention the relevant page number.
 
 
     # --------------------------------------------------------
-    # SHOW ACTUAL GEMINI ERROR
+    # Show actual Gemini error
     # --------------------------------------------------------
 
     except Exception as e:
