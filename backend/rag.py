@@ -17,7 +17,8 @@ api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
     raise ValueError(
-        "Gemini API key not found. Check backend/.env"
+        "Gemini API key not found. "
+        "Make sure GEMINI_API_KEY is set in Streamlit Secrets."
     )
 
 client = genai.Client(api_key=api_key)
@@ -30,11 +31,17 @@ client = genai.Client(api_key=api_key)
 with open("backend/chunks.json", "r", encoding="utf-8") as file:
     chunks = json.load(file)
 
+
 # Embedding model
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+embedding_model = SentenceTransformer(
+    "all-MiniLM-L6-v2"
+)
+
 
 # FAISS vector database
-index = faiss.read_index("backend/faiss.index")
+index = faiss.read_index(
+    "backend/faiss.index"
+)
 
 
 # ============================================================
@@ -86,6 +93,7 @@ def generate_answer(question):
 
     results = retrieve(question)
 
+
     # --------------------------------------------------------
     # Build context
     # --------------------------------------------------------
@@ -102,6 +110,7 @@ PAGE: {result['page']}
 
 --------------------------------
 """
+
 
     # --------------------------------------------------------
     # Prompt for Gemini
@@ -131,13 +140,27 @@ Give a clear and concise answer.
 At the end, mention the relevant page number.
 """
 
+
     # --------------------------------------------------------
-    # Gemini LLM
+    # GEMINI LLM
     # --------------------------------------------------------
 
-    response = client.models.generate_content(
-        model="gemini-3.5-flash-lite",
-        contents=prompt
-    )
+    try:
 
-    return response.text, results
+        response = client.models.generate_content(
+            model="gemini-3.5-flash-lite",
+            contents=prompt
+        )
+
+        return response.text, results
+
+
+    # --------------------------------------------------------
+    # SHOW ACTUAL GEMINI ERROR
+    # --------------------------------------------------------
+
+    except Exception as e:
+
+        raise Exception(
+            f"Gemini API Error: {str(e)}"
+        )
