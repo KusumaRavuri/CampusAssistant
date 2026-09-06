@@ -1,11 +1,11 @@
 import os
 import json
+import time
 import faiss
 
 from dotenv import load_dotenv
 from sentence_transformers import SentenceTransformer
 from google import genai
-
 
 # ============================================================
 # 1. LOAD GEMINI API KEY
@@ -149,32 +149,38 @@ At the end, mention the relevant page number.
 """
 
 
-    # --------------------------------------------------------
-    # Gemini LLM
-    # --------------------------------------------------------
+# --------------------------------------------------------
+# Gemini LLM with automatic retry
+# --------------------------------------------------------
 
-    try:
-
-        response = client.models.generate_content(
-            model="gemini-3.5-flash-lite",
-            contents=prompt
-        )
-
-        return response.text, results
-
-
-    # --------------------------------------------------------
-    # SHOW ACTUAL GEMINI ERROR
-    # --------------------------------------------------------
-
-    except Exception as e:
-
-        print("========================================")
-        print("GEMINI ERROR")
-        print("TYPE:", type(e).__name__)
-        print("ERROR:", str(e))
-        print("========================================")
-
-        raise RuntimeError(
-            f"Gemini API Error: {type(e).__name__} | {str(e)}"
-        )
+    for attempt in range(3):
+    
+        try:
+    
+            response = client.models.generate_content(
+                model="gemini-3.5-flash-lite",
+                contents=prompt
+            )
+    
+            return response.text, results
+    
+        except Exception as e:
+    
+            print("========================================")
+            print("GEMINI ERROR")
+            print("ATTEMPT:", attempt + 1)
+            print("TYPE:", type(e).__name__)
+            print("ERROR:", str(e))
+            print("========================================")
+    
+            # Retry temporary 503 server errors
+            if "503" in str(e):
+    
+                if attempt < 2:
+                    time.sleep(3)
+                    continue
+    
+            # Stop for other errors
+            raise RuntimeError(
+                f"Gemini API Error: {type(e).__name__} | {str(e)}"
+            )
