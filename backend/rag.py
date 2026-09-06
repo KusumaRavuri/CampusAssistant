@@ -13,7 +13,7 @@ from google import genai
 
 load_dotenv("backend/.env")
 
-api_key = os.getenv("AQ.Ab8RN6JGyyKnX4ZvB6wJskIMB8dYXdnHP1Wx_3AmrVddwkm-zQ")
+api_key = os.getenv("GEMINI_API_KEY")
 
 if not api_key:
     raise ValueError(
