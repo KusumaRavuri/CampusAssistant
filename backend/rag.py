@@ -164,11 +164,17 @@ At the end, mention the relevant page number.
 
 
     # --------------------------------------------------------
-    # Show actual Gemini error
+    # SHOW ACTUAL GEMINI ERROR
     # --------------------------------------------------------
 
     except Exception as e:
 
-        raise Exception(
-            f"Gemini API Error: {str(e)}"
+        print("========================================")
+        print("GEMINI ERROR")
+        print("TYPE:", type(e).__name__)
+        print("ERROR:", str(e))
+        print("========================================")
+
+        raise RuntimeError(
+            f"Gemini API Error: {type(e).__name__} | {str(e)}"
         )
